@@ -2,6 +2,7 @@ import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
+import mongoose from "mongoose";
 
 export const getAllContacts = async (req, res) => {
   try {
@@ -19,13 +20,16 @@ export const getMessagesByUserId = async (req, res) => {
   try {
     const myId = req.user._id;
     const { id: userToChatId } = req.params;
+    if (!mongoose.isValidObjectId(userToChatId)) {
+      return res.status(400).json({ message: "Invalid user ID." });
+    }
 
     const messages = await Message.find({
       $or: [
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
-    });
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
   } catch (error) {
@@ -39,6 +43,10 @@ export const sendMessage = async (req, res) => {
     const { text, image } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
+
+    if (!mongoose.isValidObjectId(receiverId)) {
+      return res.status(400).json({ message: "Invalid receiver ID." });
+    }
 
     if (!text && !image) {
       return res.status(400).json({ message: "Text or image is required." });
@@ -67,9 +75,9 @@ export const sendMessage = async (req, res) => {
 
     await newMessage.save();
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+    const receiverSocketIds = getReceiverSocketId(receiverId);
+    if (receiverSocketIds.length) {
+      io.to(receiverSocketIds).emit("newMessage", newMessage);
     }
 
     res.status(201).json(newMessage);

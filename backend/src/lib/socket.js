@@ -17,28 +17,30 @@ const io = new Server(server, {
 // apply authentication middleware to all socket connections
 io.use(socketAuthMiddleware);
 
-// we will use this function to check if the user is online or not
+// A user can have multiple tabs/devices connected at the same time.
 export function getReceiverSocketId(userId) {
-  return userSocketMap[userId];
+  return [...(userSocketMap.get(userId.toString()) || [])];
 }
 
-// this is for storig online users
-const userSocketMap = {}; // {userId:socketId}
+const userSocketMap = new Map(); // userId -> Set<socketId>
 
 io.on("connection", (socket) => {
   console.log("A user connected", socket.user.fullName);
 
   const userId = socket.userId;
-  userSocketMap[userId] = socket.id;
+  const socketIds = userSocketMap.get(userId) || new Set();
+  socketIds.add(socket.id);
+  userSocketMap.set(userId, socketIds);
 
   // io.emit() is used to send events to all connected clients
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  io.emit("getOnlineUsers", [...userSocketMap.keys()]);
 
   // with socket.on we listen for events from clients
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.user.fullName);
-    delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    socketIds.delete(socket.id);
+    if (socketIds.size === 0) userSocketMap.delete(userId);
+    io.emit("getOnlineUsers", [...userSocketMap.keys()]);
   });
 });
 

@@ -29,7 +29,11 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
-server.listen(PORT, () => {
-  console.log("Server running on port: " + PORT);
-  connectDB();
-});
+const startServer = async () => {
+  await connectDB();
+  server.listen(PORT, () => {
+    console.log(`ChatNConnect server running on port ${PORT}`);
+  });
+};
+
+startServer();

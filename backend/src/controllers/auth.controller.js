@@ -23,7 +23,8 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
     if (user) return res.status(400).json({ message: "Email already exists" });
 
     // 123456 => $dnjasdkasj_?dmsakmk
@@ -32,7 +33,7 @@ export const signup = async (req, res) => {
 
     const newUser = new User({
       fullName,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
@@ -75,7 +76,7 @@ export const login = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
     // never tell the client which one is incorrect: password or email
 
@@ -97,7 +98,11 @@ export const login = async (req, res) => {
 };
 
 export const logout = (_, res) => {
-  res.cookie("jwt", "", { maxAge: 0 });
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: ENV.NODE_ENV !== "development",
+  });
   res.status(200).json({ message: "Logged out successfully" });
 };
 
