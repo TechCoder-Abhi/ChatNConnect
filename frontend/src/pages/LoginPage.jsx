@@ -84,7 +84,7 @@ function LoginPage() {
             <div className="hidden md:w-1/2 md:flex items-center justify-center p-6 bg-gradient-to-bl from-slate-800/20 to-transparent">
               <div>
                 <img
-                  src="/login.png"
+                  src="/login.jpg"
                   alt="People using mobile devices"
                   className="w-full h-auto object-contain"
                 />

@@ -35,7 +35,7 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Account created successfully!");
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Unable to create account");
     } finally {
       set({ isSigningUp: false });
     }
@@ -51,7 +51,7 @@ export const useAuthStore = create((set, get) => ({
 
       get().connectSocket();
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Unable to log in");
     } finally {
       set({ isLoggingIn: false });
     }
@@ -76,13 +76,15 @@ export const useAuthStore = create((set, get) => ({
       toast.success("Profile updated successfully");
     } catch (error) {
       console.log("Error in update profile:", error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Unable to update profile");
     }
   },
 
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
+
+    get().socket?.disconnect();
 
     const socket = io(BASE_URL, {
       withCredentials: true, // this ensures cookies are sent with the connection
@@ -99,6 +101,7 @@ export const useAuthStore = create((set, get) => ({
   },
 
   disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
+    get().socket?.disconnect();
+    set({ socket: null, onlineUsers: [] });
   },
 }));

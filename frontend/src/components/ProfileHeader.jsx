@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
@@ -15,6 +16,11 @@ function ProfileHeader() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      toast.error("Choose an image that is 5 MB or smaller");
+      e.target.value = "";
+      return;
+    }
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
