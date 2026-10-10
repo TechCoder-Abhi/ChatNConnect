@@ -47,8 +47,11 @@ export const sendMessage = async (req, res) => {
       return res.status(400).json({ message: "Invalid receiver ID." });
     }
 
-    if (!text?.trim()) {
+    if (typeof text !== "string" || !text.trim()) {
       return res.status(400).json({ message: "Message text is required." });
+    }
+    if (text.trim().length > 2000) {
+      return res.status(400).json({ message: "Message must be 2000 characters or fewer." });
     }
     if (senderId.equals(receiverId)) {
       return res.status(400).json({ message: "Cannot send messages to yourself." });
