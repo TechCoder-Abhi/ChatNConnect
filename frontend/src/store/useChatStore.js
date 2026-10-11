@@ -19,7 +19,8 @@ export const useChatStore = create((set, get) => ({
   },
 
   setActiveTab: (tab) => set({ activeTab: tab }),
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
+  setSelectedUser: (selectedUser) =>
+    set({ selectedUser, messages: [], isMessagesLoading: Boolean(selectedUser) }),
 
   getAllContacts: async () => {
     set({ isUsersLoading: true });
@@ -45,14 +46,25 @@ export const useChatStore = create((set, get) => ({
   },
 
   getMessagesByUserId: async (userId) => {
-    set({ isMessagesLoading: true });
+    set({ messages: [], isMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
-      set({ messages: res.data });
+      if (get().selectedUser?._id !== userId) return;
+
+      set((state) => {
+        const loadedIds = new Set(res.data.map((message) => message._id));
+        const liveMessages = state.messages.filter((message) => !loadedIds.has(message._id));
+        return {
+          messages: [...res.data, ...liveMessages].sort(
+            (left, right) => new Date(left.createdAt) - new Date(right.createdAt)
+          ),
+        };
+      });
     } catch (error) {
+      if (get().selectedUser?._id !== userId) return;
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
-      set({ isMessagesLoading: false });
+      if (get().selectedUser?._id === userId) set({ isMessagesLoading: false });
     }
   },
 
@@ -77,6 +89,7 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
       set((state) => {
+        if (state.selectedUser?._id !== selectedUser._id) return state;
         if (state.messages.some((message) => message._id === res.data._id)) {
           return { messages: state.messages.filter((message) => message._id !== tempId) };
         }
