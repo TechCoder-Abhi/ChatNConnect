@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "npm ci --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend",
+    "check": "npm run check --prefix backend && npm run lint --prefix frontend",
     "start": "npm run start --prefix backend"
   },
   "keywords": [],

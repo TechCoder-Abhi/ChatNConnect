@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/controllers/auth.controller.js && node --check src/controllers/message.controller.js && node --check src/routes/message.route.js && node --check src/models/Message.js && node --check src/lib/db.js && node --check src/middleware/auth.middleware.js && node --check src/lib/socket.js"
   },
   "keywords": [],
   "type": "module",
