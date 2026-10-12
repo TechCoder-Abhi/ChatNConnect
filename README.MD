@@ -1,190 +1,114 @@
 # ChatNConnect
 
-ChatNConnect is a full-stack, real-time messaging application for one-to-one conversations. It combines a React/Vite client with an Express, MongoDB, and Socket.IO backend.
+ChatNConnect is a full-stack real-time messaging application for private, one-to-one conversations. It combines a responsive React interface with an Express API, MongoDB persistence, and Socket.IO events for live updates.
 
 ## Highlights
 
-- Secure account registration, login, logout, and session persistence with an HTTP-only JWT cookie
-- Real-time text and image messages over Socket.IO
-- Online presence updates across multiple browser tabs or devices
-- Contact discovery and chat-partner lists
-- Profile-picture uploads through Cloudinary
-- Optional welcome emails through Resend
+- Secure signup, login, logout, and session persistence using HTTP-only JWT cookies
+- Real-time messaging and online presence across multiple browser tabs
+- Contact search and conversation lists
+- Cursor-based pagination for message history
+- Unread message counts, notifications, mark-as-read actions, and read receipts
+- Responsive chat interface with loading states and starter-message suggestions
 - API and authentication rate limiting
-- Responsive interface built with Tailwind CSS and daisyUI
+- Production mode that serves the built frontend from the backend
 
 ## Technology
 
-### Frontend
+- **Frontend:** React 19, Vite, React Router, Zustand, Axios, Socket.IO Client, Tailwind CSS, daisyUI
+- **Backend:** Node.js 20.19+, Express, MongoDB/Mongoose, Socket.IO, JSON Web Tokens, express-rate-limit
+- **Quality checks:** GitHub Actions, ESLint, Node.js syntax checks, and a production frontend build
 
-- React 19
-- Vite
-- React Router
-- Zustand
-- Axios
-- Socket.IO Client
-- Tailwind CSS and daisyUI
-
-### Backend
-
-- Node.js 20.19 or newer
-- Express
-- MongoDB with Mongoose
-- Socket.IO
-- JSON Web Tokens and HTTP-only cookies
-- Cloudinary
-- Resend
-- express-rate-limit
-
-## Repository structure
+## Project structure
 
 ```text
-.
-├── backend/
-│   ├── src/
-│   │   ├── controllers/    # Request handlers
-│   │   ├── emails/         # Email providers and templates
-│   │   ├── lib/            # Database, environment, socket, and utility modules
-│   │   ├── middleware/     # Authentication and rate limiting
-│   │   ├── models/         # Mongoose models
-│   │   └── routes/         # HTTP route definitions
-│   └── .env.example
-├── frontend/
-│   ├── public/             # Static images and notification sounds
-│   └── src/
-│       ├── components/     # Reusable UI components
-│       ├── pages/          # Route-level screens
-│       ├── store/          # Authentication and chat state
-│       └── lib/            # Client utilities
-├── package.json            # Root build and start commands
-└── README.MD
+backend/
+  src/
+    controllers/       Request handlers
+    lib/               Database, environment, and Socket.IO setup
+    middleware/        Authentication and rate limiting
+    models/            Mongoose models
+    routes/             API routes
+frontend/
+  src/
+    components/        Reusable UI components
+    pages/             Login, signup, and chat screens
+    store/             Client state management
+    lib/               Client utilities
+  public/              Images and notification sounds
+.github/workflows/     Continuous integration
 ```
 
 ## Requirements
 
-- Node.js 20.19.0 or newer
+- Node.js 20.19 or newer
 - npm
-- A MongoDB deployment (local MongoDB or MongoDB Atlas)
-- Cloudinary credentials for image uploads
-- Resend credentials only if welcome emails are enabled
+- MongoDB running locally or a MongoDB Atlas connection
 
-## Local development
+## Run locally
 
-### 1. Configure the backend
+From the project root:
 
-Copy the example environment file:
+1. Create `backend/.env` from `backend/.env.example`.
+2. Set `MONGO_URI` and replace `JWT_SECRET` with a long, random secret.
+3. Install dependencies:
 
-```bash
-cp backend/.env.example backend/.env
-```
+   ```powershell
+   npm ci --prefix backend
+   npm ci --prefix frontend
+   ```
 
-On Windows PowerShell, use:
+4. Start the backend and frontend in separate terminals:
 
-```powershell
-Copy-Item backend/.env.example backend/.env
-```
+   ```powershell
+   npm run dev --prefix backend
+   npm run dev --prefix frontend
+   ```
 
-Set at least `MONGO_URI` and a strong, unique `JWT_SECRET`. The default email mode is disabled, so email credentials are not required for local development.
+5. Open [http://localhost:5173](http://localhost:5173).
 
-### 2. Install dependencies
+### Environment variables
 
-Install each workspace independently:
-
-```bash
-cd backend
-npm install
-
-cd ../frontend
-npm install
-```
-
-### 3. Start the application
-
-Run the backend and frontend in separate terminals:
-
-```bash
-# Terminal 1
-cd backend
-npm run dev
-```
-
-```bash
-# Terminal 2
-cd frontend
-npm run dev
-```
-
-Open the Vite URL shown in the frontend terminal, normally `http://localhost:5173`. The API and Socket.IO server run on `http://localhost:3000` by default.
-
-If PowerShell blocks `npm` scripts on Windows, use `npm.cmd` instead.
-
-## Environment configuration
-
-All backend configuration is read from `backend/.env`. Never commit this file or real credentials.
-
-| Variable | Required | Description |
+| Variable | Description | Example |
 | --- | --- | --- |
-| `PORT` | No | Backend port. Defaults to `3000`. |
-| `NODE_ENV` | No | Use `development` locally and `production` when deployed. |
-| `CLIENT_URL` | Yes | Frontend origin allowed by CORS, for example `http://localhost:5173`. |
-| `MONGO_URI` | Yes | MongoDB connection string. |
-| `JWT_SECRET` | Yes | Long, random secret used to sign authentication cookies. |
-| `CLOUDINARY_CLOUD_NAME` | For image uploads | Cloudinary cloud name. |
-| `CLOUDINARY_API_KEY` | For image uploads | Cloudinary API key. |
-| `CLOUDINARY_API_SECRET` | For image uploads | Cloudinary API secret. |
-| `EMAIL_PROVIDER` | No | `disabled` (default) or `resend`. |
-| `RESEND_API_KEY` | When `EMAIL_PROVIDER=resend` | Resend API key. |
-| `EMAIL_FROM` | When `EMAIL_PROVIDER=resend` | Sender address authorized by Resend. |
-| `EMAIL_FROM_NAME` | No | Display name for welcome emails. |
+| `PORT` | Backend and Socket.IO port | `3000` |
+| `NODE_ENV` | Runtime mode | `development` |
+| `CLIENT_URL` | Frontend origin allowed by CORS and Socket.IO | `http://localhost:5173` |
+| `MONGO_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/chatnconnect` |
+| `JWT_SECRET` | Secret used to sign session tokens | Long random value |
 
-When email delivery is disabled, signup still succeeds and no email provider is contacted. When it is enabled, configure a sender address or domain authorized by Resend. See the [Resend domain documentation](https://resend.com/changelog/new-domains-workflow).
+## Useful commands
 
-## Available commands
-
-### Root
+Run these commands from the project root unless noted otherwise.
 
 | Command | Purpose |
 | --- | --- |
-| `npm run build` | Clean-install backend and frontend dependencies, then create the frontend production bundle. |
-| `npm start` | Start the backend server. |
+| `npm run check` | Check backend syntax and lint the frontend |
+| `npm run build` | Install locked dependencies and build the frontend |
+| `npm start` | Start the backend |
+| `npm run dev --prefix backend` | Start the backend with Nodemon |
+| `npm run dev --prefix frontend` | Start the Vite development server |
+| `npm run lint --prefix frontend` | Run frontend ESLint |
 
-### Backend
+When `NODE_ENV=production`, `npm start` serves the frontend build from `frontend/dist`. Build it first with `npm run build`.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the backend with Nodemon. |
-| `npm start` | Start the backend with Node.js. |
+## API overview
 
-### Frontend
+All API routes use the `/api` prefix. Message routes and `GET /auth/check` require the authenticated JWT cookie.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the Vite development server. |
-| `npm run lint` | Run ESLint. |
-| `npm run build` | Create the production frontend bundle. |
-| `npm run preview` | Serve the production bundle locally. |
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/auth/signup` | Create an account and session |
+| `POST` | `/auth/login` | Start a session |
+| `POST` | `/auth/logout` | Clear the session cookie |
+| `GET` | `/auth/check` | Return the current user |
+| `GET` | `/health` | Report API and database readiness |
+| `GET` | `/messages/contacts` | List available contacts |
+| `GET` | `/messages/chats` | List conversation partners |
+| `GET` | `/messages/unread` | Return unread counts by sender |
+| `PATCH` | `/messages/read/:userId` | Mark one conversation as read |
+| `PATCH` | `/messages/read-all` | Mark all incoming messages as read |
+| `GET` | `/messages/:userId` | Load a conversation; supports `limit` and `cursor` |
+| `POST` | `/messages/send/:userId` | Send a text message |
 
-## HTTP API
-
-All API routes are prefixed with `/api`.
-
-### Authentication
-
-| Method | Path | Authentication | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/auth/signup` | Public | Create an account and issue a session cookie. |
-| `POST` | `/auth/login` | Public | Authenticate an existing account. |
-| `POST` | `/auth/logout` | Public | Clear the session cookie. |
-| `GET` | `/auth/check` | Required | Return the current authenticated user. |
-| `PUT` | `/auth/update-profile` | Required | Upload and save a profile picture. |
-
-### Messages
-
-| Method | Path | Authentication | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/messages/contacts` | Required | List all other users. |
-| `GET` | `/messages/chats` | Required | List users with an existing conversation. |
-| `GET` | `/messages/:userId` | Required | Load the conversation with a user. |
-| `POST` | `/messages/send/:userId` | Required | Send a text message, image, or both. |
-
-Socket.IO connections use the same JWT cookie for authentication. New messages are delivered through the `newMessage` event, and presence changes through `getOnlineUsers`.
+Message history returns `messages`, `hasMore`, and `nextCursor`. Socket.IO uses the same session cookie and publishes online-user, new-message, and read-state updates.

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { ENV } from "../lib/env.js";
 
 export const signup = async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password } = req.body || {};
 
   try {
     if (
@@ -23,9 +23,12 @@ export const signup = async (req, res) => {
     if (normalizedName.length > 80) {
       return res.status(400).json({ message: "Name must be 80 characters or fewer" });
     }
+    if (normalizedEmail.length > 254) {
+      return res.status(400).json({ message: "Email must be 254 characters or fewer" });
+    }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    if (password.length < 6 || password.length > 128) {
+      return res.status(400).json({ message: "Password must be between 6 and 128 characters" });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,10 +67,13 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
 
   if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
     return res.status(400).json({ message: "Email and password are required" });
+  }
+  if (email.trim().length > 254 || password.length > 128) {
+    return res.status(400).json({ message: "Invalid email or password length" });
   }
 
   try {

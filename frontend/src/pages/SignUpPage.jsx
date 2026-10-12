@@ -32,12 +32,17 @@ function SignUpPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* FULL NAME */}
                   <div>
-                    <label className="auth-input-label">Full Name</label>
+                    <label htmlFor="signup-full-name" className="auth-input-label">Full Name</label>
                     <div className="relative">
                       <UserIcon className="auth-input-icon" />
 
                       <input
                         type="text"
+                        id="signup-full-name"
+                        name="fullName"
+                        autoComplete="name"
+                        required
+                        maxLength={80}
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         className="input"
@@ -48,12 +53,16 @@ function SignUpPage() {
 
                   {/* EMAIL INPUT */}
                   <div>
-                    <label className="auth-input-label">Email</label>
+                    <label htmlFor="signup-email" className="auth-input-label">Email</label>
                     <div className="relative">
                       <MailIcon className="auth-input-icon" />
 
                       <input
                         type="email"
+                        id="signup-email"
+                        name="email"
+                        autoComplete="email"
+                        required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="input"
@@ -64,12 +73,18 @@ function SignUpPage() {
 
                   {/* PASSWORD INPUT */}
                   <div>
-                    <label className="auth-input-label">Password</label>
+                    <label htmlFor="signup-password" className="auth-input-label">Password</label>
                     <div className="relative">
                       <LockIcon className="auth-input-icon" />
 
                       <input
                         type="password"
+                        id="signup-password"
+                        name="password"
+                        autoComplete="new-password"
+                        minLength={6}
+                        maxLength={128}
+                        required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         className="input"
